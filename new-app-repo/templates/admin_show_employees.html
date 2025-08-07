@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Show Employees - LMS Admin</title>
+  
+  <!-- Google Fonts: Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+  <style>
+    :root {
+      --primary-color: #00d9ff;
+      --primary-light: #a7f3ff;
+      --primary-dark: #00b8d4;
+      --background-color: #0f172a;
+      --sidebar-bg: #1e293b;
+      --card-bg: #1e293b;
+      --text-color: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+      --shadow-color: rgba(0, 217, 255, 0.1);
+      --success-color: #22c55e;
+      --warning-color: #f59e0b;
+      --danger-color: #ef4444;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      overflow-x: hidden;
+    }
+
+    .dashboard-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* --- Sidebar Styles --- */
+    .sidebar {
+      width: 260px;
+      background-color: var(--sidebar-bg);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border-color);
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .sidebar-header .logo-icon {
+        font-size: 2rem;
+        color: var(--primary-color);
+    }
+    
+    .sidebar-header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .sidebar-nav h3 {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin: 1.5rem 0 0.75rem;
+    }
+
+    .sidebar-nav ul {
+      list-style: none;
+    }
+
+    .sidebar-nav ul li a {
+      color: var(--text-muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      transition: background 0.2s ease, color 0.2s ease;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    .sidebar-nav ul li a i {
+      margin-right: 1rem;
+      min-width: 20px;
+      text-align: center;
+      font-size: 1.1rem;
+    }
+    
+    .sidebar-nav ul li a:hover {
+      background-color: rgba(0, 217, 255, 0.1);
+      color: var(--primary-light);
+    }
+    
+    .sidebar-nav ul li a.active {
+        background-color: var(--primary-color);
+        color: var(--background-color);
+        font-weight: 600;
+        box-shadow: 0 4px 15px var(--shadow-color);
+    }
+    
+    .sidebar-nav ul li a.active i {
+        color: var(--background-color);
+    }
+    
+    .sidebar-footer {
+        margin-top: auto;
+    }
+
+    /* --- Main Content Styles --- */
+    .main-content {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    .main-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    
+    .main-header h2 {
+        font-size: 1.8rem;
+        font-weight: 600;
+    }
+
+    /* --- Table Styles --- */
+    .table-container {
+        background-color: var(--card-bg);
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        overflow: hidden; /* Ensures border-radius is respected by the table */
+    }
+    
+    .employee-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .employee-table th, .employee-table td {
+        padding: 1rem 1.5rem;
+        text-align: left;
+    }
+    
+    .employee-table thead {
+        background-color: #2a3a54; /* Slightly different from card-bg for contrast */
+    }
+    
+    .employee-table th {
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .employee-table tbody tr {
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .employee-table tbody tr:last-child {
+        border-bottom: none;
+    }
+    
+    .employee-table tbody tr:hover {
+        background-color: rgba(0, 217, 255, 0.05);
+    }
+    
+    .employee-table td {
+        color: var(--text-color);
+    }
+    
+    /* Status Tag */
+    .status-tag {
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: inline-block;
+    }
+    
+    .status-completed { background-color: rgba(34, 197, 94, 0.2); color: var(--success-color); }
+    .status-in-progress { background-color: rgba(245, 158, 11, 0.2); color: var(--warning-color); }
+    .status-not-started { background-color: rgba(239, 68, 68, 0.2); color: var(--danger-color); }
+    
+    /* Progress Bar */
+    .progress-bar-container {
+        width: 100%;
+        background-color: #2a3a54;
+        border-radius: 5px;
+        height: 8px;
+    }
+    
+    .progress-bar {
+        height: 100%;
+        background-color: var(--primary-color);
+        border-radius: 5px;
+        transition: width 0.5s ease-in-out;
+    }
+    
+    /* Loader */
+    .loader-container {
+        text-align: center;
+        padding: 3rem;
+    }
+    .loader {
+        border: 4px solid var(--border-color);
+        border-top: 4px solid var(--primary-color);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+  </style>
+</head>
+<body>
+
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div class="sidebar-header">
+        <i class="fas fa-brain logo-icon"></i>
+        <h1>LMS Admin</h1>
+      </div>
+      
+      <div class="sidebar-nav">
+        <h3>Employee Management</h3>
+        <ul>
+          <li><a href="{{ url_for('admin.show_employees_page') }}" class="active"><i class="fas fa-users"></i> Show Employees</a></li>
+          <li><a href="{{ url_for('admin.add_employee_page') }}"><i class="fas fa-user-plus"></i> Add Employee</a></li>
+          <li><a href="{{ url_for('admin.delete_employee_page') }}"><i class="fas fa-user-minus"></i> Delete Employee</a></li>
+        </ul>
+
+        <h3>Reports & Analytics</h3>
+        <ul>
+          <li><a href="{{ url_for('admin.search_filters_page') }}"><i class="fas fa-search"></i> User Search</a></li>
+          <li><a href="{{ url_for('admin.agent_metrics_page') }}"><i class="fas fa-chart-simple"></i> Agent Metrics</a></li>
+          <li><a href="{{ url_for('admin.generate_reports_page') }}"><i class="fas fa-file-arrow-down"></i> Generate Reports</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+         <div class="sidebar-nav">
+             <h3>Other</h3>
+             <ul>
+                <li><a href="#" onclick="logout(event)"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+             </ul>
+         </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="main-header">
+        <h2>All Employees</h2>
+      </header>
+      
+      <div class="table-container">
+        <table class="employee-table">
+          <thead>
+            <tr>
+              <th>Emp Code</th>
+              <th>Name</th>
+              <th>Domain</th>
+              <th>Course Status</th>
+              <th>Progress (%)</th>
+            </tr>
+          </thead>
+          <tbody id="employeeTableBody">
+            <!-- Loader will be shown here initially -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script>
+    // --- GSAP Animations ---
+    document.addEventListener('DOMContentLoaded', () => {
+        gsap.from('.sidebar', { duration: 1, x: -260, ease: 'power3.out' });
+        gsap.from('.main-header, .table-container', {
+            duration: 1,
+            opacity: 0,
+            y: 30,
+            ease: 'power3.out',
+            stagger: 0.1,
+            delay: 0.3
+        });
+    });
+
+    // --- Data Fetching and Table Population ---
+    window.onload = async () => {
+      const tbody = document.getElementById('employeeTableBody');
+      
+      // Show loader
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5">
+            <div class="loader-container">
+              <div class="loader"></div>
+            </div>
+          </td>
+        </tr>`;
+
+      try {
+        const res = await fetch('/admin/list_employees', { credentials: 'include' });
+        const data = await res.json();
+        
+        // Clear loader
+        tbody.innerHTML = '';
+
+        if (data.success && data.employees.length > 0) {
+          data.employees.forEach(emp => {
+            const statusClass = emp.Course_Status.toLowerCase().replace(' ', '-');
+            const row = `
+              <tr>
+                <td>${emp.Emp_Code}</td>
+                <td>${emp.Name}</td>
+                <td>${emp.Domain}</td>
+                <td><span class="status-tag status-${statusClass}">${emp.Course_Status}</span></td>
+                <td>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: ${emp.Learning_Progress}%;"></div>
+                  </div>
+                </td>
+              </tr>
+            `;
+            tbody.innerHTML += row;
+          });
+        } else {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem;">No employees found.</td></tr>';
+        }
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--danger-color);">Failed to load employee data.</td></tr>';
+      }
+    };
+
+    // --- Logout Functionality ---
+    async function logout(event) {
+      event.preventDefault();
+      await fetch("/logout", {method: "POST", credentials: "include"});
+      
+      gsap.to('.dashboard-container', {
+          duration: 0.5,
+          opacity: 0,
+          ease: 'power2.in',
+          onComplete: () => {
+              window.location.href = "/";
+          }
+      });
+    }
+  </script>
+</body>
+</html>

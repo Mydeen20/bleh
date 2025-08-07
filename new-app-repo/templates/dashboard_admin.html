@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard - LMS Portal</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+  <style>
+    :root {
+      --primary-color: #00d9ff; --primary-light: #a7f3ff; --primary-dark: #00b8d4; --background-color: #0f172a; --sidebar-bg: #1e293b; --card-bg: #1e293b; --text-color: #f8fafc; --text-muted: #94a3b8; --border-color: #334155; --shadow-color: rgba(0, 217, 255, 0.1); --success-color: #22c55e; --warning-color: #f59e0b; --danger-color: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background-color: var(--background-color); color: var(--text-color); overflow-x: hidden; }
+    .dashboard-container { display: flex; min-height: 100vh; }
+    .sidebar { width: 260px; background-color: var(--sidebar-bg); padding: 1.5rem; display: flex; flex-direction: column; transition: width 0.3s ease; border-right: 1px solid var(--border-color); }
+    .sidebar-header-link { text-decoration: none; color: inherit; display: block; margin-bottom: 2.5rem; }
+    .sidebar-header { display: flex; align-items: center; gap: 1rem; }
+    .sidebar-header .logo-icon { font-size: 2rem; color: var(--primary-color); }
+    .sidebar-header h1 { font-size: 1.5rem; font-weight: 600; color: var(--text-color); }
+    .sidebar-nav h3 { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin: 1.5rem 0 0.75rem; }
+    .sidebar-nav ul { list-style: none; }
+    .sidebar-nav ul li a { color: var(--text-muted); text-decoration: none; display: flex; align-items: center; padding: 0.75rem 1rem; border-radius: 8px; transition: background 0.2s ease, color 0.2s ease; font-weight: 500; margin-bottom: 0.25rem; }
+    .sidebar-nav ul li a i { margin-right: 1rem; min-width: 20px; text-align: center; font-size: 1.1rem; transition: transform 0.2s ease; }
+    .sidebar-nav ul li a:hover { background-color: rgba(0, 217, 255, 0.1); color: var(--primary-light); }
+    .sidebar-nav ul li a.active { background-color: var(--primary-color); color: var(--background-color); font-weight: 600; box-shadow: 0 4px 15px var(--shadow-color); }
+    .sidebar-footer { margin-top: auto; }
+    .main-content { flex: 1; padding: 2rem; overflow-y: auto; }
+    .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    .main-header h2 { font-size: 1.8rem; font-weight: 600; }
+    .admin-profile img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--primary-color); }
+    .admin-profile span { font-weight: 500; margin-left: 0.5rem;}
+    .stat-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+    .stat-card { background-color: var(--card-bg); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 1.5rem; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .stat-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px var(--shadow-color); }
+    .stat-card .icon-container { font-size: 1.8rem; padding: 1rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .icon-container.bg-success { background-color: rgba(34, 197, 94, 0.2); color: var(--success-color); }
+    .icon-container.bg-warning { background-color: rgba(245, 158, 11, 0.2); color: var(--warning-color); }
+    .icon-container.bg-primary { background-color: rgba(0, 217, 255, 0.2); color: var(--primary-color); }
+    .icon-container.bg-danger { background-color: rgba(239, 68, 68, 0.2); color: var(--danger-color); }
+    .stat-card .info h3 { font-size: 1.8rem; font-weight: 700; }
+    .stat-card .info p { color: var(--text-muted); font-size: 0.9rem; }
+    .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
+    .chart-container { background-color: var(--card-bg); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); }
+    .chart-container h3 { margin-bottom: 1.5rem; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <nav class="sidebar">
+      <a href="{{ url_for('dashboard_admin') }}" class="sidebar-header-link">
+          <div class="sidebar-header"><i class="fas fa-brain logo-icon"></i><h1>LMS Admin</h1></div>
+      </a>
+      <div class="sidebar-nav">
+        <h3>AI Management</h3>
+        <ul>
+          <li><a href="{{ url_for('admin.hr_agent_page') }}"><i class="fas fa-robot"></i> AI HR Agent</a></li>
+        </ul>
+        <h3>Reports & Analytics</h3>
+        <ul>
+          <li><a href="{{ url_for('admin.agent_metrics_page') }}"><i class="fas fa-chart-simple"></i> Agent Metrics</a></li>
+          <li><a href="{{ url_for('admin.generate_reports_page') }}"><i class="fas fa-file-arrow-down"></i> Generate Reports</a></li>
+        </ul>
+      </div>
+      <div class="sidebar-footer">
+         <div class="sidebar-nav">
+             <h3>Other</h3>
+             <ul><li><a href="#" onclick="logout(event)"><i class="fas fa-sign-out-alt"></i> Logout</a></li></ul>
+         </div>
+      </div>
+    </nav>
+    <main class="main-content">
+      <header class="main-header">
+        <div>
+            <h2>Welcome, Admin!</h2>
+            <p style="color: var(--text-muted);">Here's what's happening today.</p>
+        </div>
+        <div class="header-actions">
+            <div class="admin-profile">
+                <img src="https://i.pravatar.cc/150?u=admin" alt="Admin Avatar">
+                <span>Admin User</span>
+            </div>
+        </div>
+      </header>
+      <div class="stat-cards-grid">
+        <div class="stat-card">
+            <div class="icon-container bg-success"><i class="fas fa-users-gear"></i></div>
+            <div class="info"><h3 id="total-employees">0</h3><p>Total Employees</p></div>
+        </div>
+        <div class="stat-card">
+            <div class="icon-container bg-primary"><i class="fas fa-book-open"></i></div>
+            <div class="info"><h3 id="total-courses">0</h3><p>Total Courses</p></div>
+        </div>
+        <div class="stat-card">
+            <div class="icon-container bg-warning"><i class="fas fa-person-chalkboard"></i></div>
+            <div class="info"><h3 id="avg-completion">0%</h3><p>Avg. Completion</p></div>
+        </div>
+        <div class="stat-card">
+            <div class="icon-container bg-danger"><i class="fas fa-triangle-exclamation"></i></div>
+            <div class="info"><h3 id="overdue-tasks">0</h3><p>Overdue Tasks</p></div>
+        </div>
+      </div>
+      <div class="charts-grid">
+          <div class="chart-container">
+              <h3>Employees by Department</h3>
+              <canvas id="learningProgressChart"></canvas>
+          </div>
+          <div class="chart-container">
+              <h3>Course Completion Status</h3>
+              <canvas id="courseStatusChart"></canvas>
+          </div>
+      </div>
+    </main>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script>
+    let learningProgressChart;
+
+    function animateCountUp(el, end, isPercent = false) {
+        let start = 0;
+        const duration = 1500;
+        const frameDuration = 1000 / 60;
+        const totalFrames = Math.round(duration / frameDuration);
+        let currentFrame = 0;
+        const counter = setInterval(() => {
+            currentFrame++;
+            const progress = currentFrame / totalFrames;
+            const easedProgress = 1 - Math.pow(1 - progress, 3);
+            const currentValue = Math.round(start + (end - start) * easedProgress);
+            el.textContent = isPercent ? `${currentValue}%` : currentValue;
+            if (currentFrame === totalFrames) {
+                clearInterval(counter);
+                el.textContent = isPercent ? `${end}%` : end;
+            }
+        }, frameDuration);
+    }
+
+    async function fetchDashboardData() {
+        try {
+            const response = await fetch('/admin/dashboard_stats', { credentials: 'include' });
+            const result = await response.json();
+            if (result.success) {
+                const stats = result.stats;
+                animateCountUp(document.getElementById('total-employees'), stats.total_employees);
+                
+                const chartData = stats.learning_progress_chart;
+                if (learningProgressChart) learningProgressChart.destroy();
+                
+                const gradient = document.getElementById('learningProgressChart').getContext('2d').createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, 'rgba(0, 217, 255, 0.6)');
+                gradient.addColorStop(1, 'rgba(0, 217, 255, 0.1)');
+
+                learningProgressChart = new Chart(document.getElementById('learningProgressChart').getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: chartData.labels,
+                        datasets: [{
+                            label: 'Number of Employees',
+                            data: chartData.data,
+                            backgroundColor: gradient,
+                            borderColor: 'rgba(0, 217, 255, 1)',
+                            borderWidth: 2,
+                            borderRadius: 5,
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#94a3b8' } }, x: { grid: { display: false }, ticks: { color: '#94a3b8' } } }
+                    }
+                });
+            }
+        } catch (error) {
+            console.error("Failed to fetch dashboard data:", error);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        gsap.from('.sidebar', { duration: 1, x: -260, ease: 'power3.out' });
+        gsap.from('.main-content', { duration: 1, opacity: 0, ease: 'power2.inOut', delay: 0.3 });
+        gsap.from('.main-header, .stat-card, .chart-container', { duration: 1, opacity: 0, y: 30, ease: 'power3.out', stagger: 0.1, delay: 0.5 });
+        fetchDashboardData();
+        
+        animateCountUp(document.getElementById('total-courses'), 9);
+        animateCountUp(document.getElementById('overdue-tasks'), 5);
+        
+        new Chart(document.getElementById('courseStatusChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'In Progress', 'Not Started'],
+                datasets: [{ data: [102, 35, 15], backgroundColor: [ '#22c55e', '#f59e0b', '#ef4444' ], borderColor: '#1e293b', borderWidth: 4, }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 20, font: { size: 14 } } } } }
+        });
+    });
+
+    async function logout(event) {
+      event.preventDefault();
+      await fetch("/logout", {method: "POST", credentials: "include"});
+      gsap.to('.dashboard-container', { duration: 0.5, opacity: 0, ease: 'power2.in', onComplete: () => { window.location.href = "/"; } });
+    }
+  </script>
+</body>
+</html>

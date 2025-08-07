@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Upload Proficiency - LMS Admin</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+  <style>
+    :root {
+      --primary-color: #00d9ff; --primary-light: #a7f3ff; --primary-dark: #00b8d4; --background-color: #0f172a; --sidebar-bg: #1e293b; --card-bg: #1e293b; --text-color: #f8fafc; --text-muted: #94a3b8; --border-color: #334155; --shadow-color: rgba(0, 217, 255, 0.1); --success-color: #22c55e; --danger-color: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background-color: var(--background-color); color: var(--text-color); overflow-x: hidden; }
+    .dashboard-container { display: flex; min-height: 100vh; }
+    .sidebar { width: 260px; background-color: var(--sidebar-bg); padding: 1.5rem; display: flex; flex-direction: column; border-right: 1px solid var(--border-color); }
+    .sidebar-header-link { text-decoration: none; color: inherit; display: block; margin-bottom: 2.5rem; }
+    .sidebar-header { display: flex; align-items: center; gap: 1rem; }
+    .sidebar-header .logo-icon { font-size: 2rem; color: var(--primary-color); }
+    .sidebar-header h1 { font-size: 1.5rem; font-weight: 600; }
+    .sidebar-nav h3 { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin: 1.5rem 0 0.75rem; }
+    .sidebar-nav ul { list-style: none; }
+    .sidebar-nav ul li a { color: var(--text-muted); text-decoration: none; display: flex; align-items: center; padding: 0.75rem 1rem; border-radius: 8px; transition: background 0.2s ease, color 0.2s ease; font-weight: 500; margin-bottom: 0.25rem; }
+    .sidebar-nav ul li a i { margin-right: 1rem; min-width: 20px; text-align: center; font-size: 1.1rem; }
+    .sidebar-nav ul li a:hover { background-color: rgba(0, 217, 255, 0.1); color: var(--primary-light); }
+    .sidebar-nav ul li a.active { background-color: var(--primary-color); color: var(--background-color); font-weight: 600; box-shadow: 0 4px 15px var(--shadow-color); }
+    .sidebar-footer { margin-top: auto; }
+    .main-content { flex: 1; padding: 2rem; overflow-y: auto; }
+    .main-header { margin-bottom: 2rem; }
+    .main-header h2 { font-size: 1.8rem; font-weight: 600; }
+    
+    /* Upload Box Styles */
+    .upload-container { background-color: var(--card-bg); padding: 2.5rem; border-radius: 12px; border: 1px solid var(--border-color); max-width: 700px; margin: 0 auto; }
+    .upload-box { border: 2px dashed var(--border-color); border-radius: 12px; padding: 3rem; text-align: center; transition: all 0.3s ease; cursor: pointer; }
+    .upload-box.dragover { border-color: var(--primary-color); background-color: rgba(0, 217, 255, 0.05); }
+    .upload-box i { font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem; }
+    .upload-box p { color: var(--text-muted); }
+    input[type="file"] { display: none; }
+    #file-name { margin-top: 1.5rem; font-weight: 600; color: var(--primary-light); }
+    #upload-status { margin-top: 1rem; font-size: 0.9rem; height: 20px; }
+    .upload-btn { margin-top: 1.5rem; padding: 0.8rem 2rem; font-size: 1rem; background: var(--primary-color); color: var(--background-color); border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; }
+    .upload-btn:disabled { background: var(--text-muted); cursor: not-allowed; }
+    .upload-btn:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-2px); }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <nav class="sidebar">
+      <a href="{{ url_for('dashboard_admin') }}" class="sidebar-header-link">
+        <div class="sidebar-header"><i class="fas fa-brain logo-icon"></i><h1>LMS Admin</h1></div>
+      </a>
+      <div class="sidebar-nav">
+        <h3>Employee Management</h3>
+        <ul>
+          <li><a href="{{ url_for('admin.show_employees_page') }}"><i class="fas fa-users"></i> Show Employees</a></li>
+          <li><a href="{{ url_for('admin.add_employee_page') }}"><i class="fas fa-user-plus"></i> Add Employee</a></li>
+          <li><a href="{{ url_for('admin.delete_employee_page') }}"><i class="fas fa-user-minus"></i> Delete Employee</a></li>
+        </ul>
+        <h3>Reports & Analytics</h3>
+        <ul>
+          <li><a href="{{ url_for('admin.search_filters_page') }}"><i class="fas fa-search"></i> User Search</a></li>
+          <li><a href="{{ url_for('admin.agent_metrics_page') }}"><i class="fas fa-chart-simple"></i> Agent Metrics</a></li>
+          <li><a href="{{ url_for('admin.generate_reports_page') }}"><i class="fas fa-file-arrow-down"></i> Generate Reports</a></li>
+        </ul>
+         <h3>Data Management</h3>
+        <ul>
+          <li><a href="{{ url_for('admin.upload_proficiency_page') }}" class="active"><i class="fas fa-file-upload"></i> Upload Proficiency</a></li>
+        </ul>
+      </div>
+      <div class="sidebar-footer">
+         <div class="sidebar-nav">
+             <h3>Other</h3>
+             <ul><li><a href="#" onclick="logout(event)"><i class="fas fa-sign-out-alt"></i> Logout</a></li></ul>
+         </div>
+      </div>
+    </nav>
+    <main class="main-content">
+      <header class="main-header"><h2>Upload Employee Proficiency Data</h2></header>
+      <div class="upload-container">
+        <div class="upload-box" id="drop-area">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <h3>Drag & Drop File Here</h3>
+          <p>or click to select a file (.csv, .xlsx, .json)</p>
+          <input type="file" id="fileElem" accept=".csv,.xlsx,.json">
+          <div id="file-name">No file selected</div>
+          <button id="uploadBtn" disabled>Upload File</button>
+          <div id="upload-status"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        gsap.from('.sidebar', { duration: 1, x: -260, ease: 'power3.out' });
+        gsap.from('.main-header, .upload-container', { duration: 1, opacity: 0, y: 30, ease: 'power3.out', stagger: 0.1, delay: 0.3 });
+    });
+
+    const dropArea = document.getElementById("drop-area");
+    const fileElem = document.getElementById("fileElem");
+    const fileNameDisplay = document.getElementById("file-name");
+    const uploadBtn = document.getElementById("uploadBtn");
+    const uploadStatus = document.getElementById("upload-status");
+    let selectedFile = null;
+
+    dropArea.addEventListener("click", () => fileElem.click());
+    fileElem.addEventListener("change", handleFiles);
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropArea.addEventListener(eventName, preventDefaults, false);
+    });
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropArea.addEventListener(eventName, () => dropArea.classList.add('dragover'), false);
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropArea.addEventListener(eventName, () => dropArea.classList.remove('dragover'), false);
+    });
+    dropArea.addEventListener('drop', handleDrop, false);
+    uploadBtn.addEventListener("click", uploadFile);
+
+    function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+    function handleFiles() { updateFile(this.files[0]); }
+    function handleDrop(e) { updateFile(e.dataTransfer.files[0]); }
+
+    function updateFile(file) {
+      selectedFile = file;
+      if (selectedFile) {
+        fileNameDisplay.textContent = selectedFile.name;
+        uploadBtn.disabled = false;
+        uploadStatus.textContent = '';
+      }
+    }
+
+    async function uploadFile() {
+      if (!selectedFile) return;
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      uploadStatus.innerHTML = `<span style="color: var(--primary-light);">⏳ Uploading...</span>`;
+      uploadBtn.disabled = true;
+
+      try {
+        const response = await fetch("/admin/upload_proficiency", { method: "POST", body: formData, credentials: 'include' });
+        const result = await response.json();
+        if (result.success) {
+          uploadStatus.innerHTML = `<span style="color: var(--success-color);">✅ ${result.message}</span>`;
+        } else {
+          uploadStatus.innerHTML = `<span style="color: var(--danger-color);">❌ ${result.message}</span>`;
+        }
+      } catch (err) {
+        uploadStatus.innerHTML = `<span style="color: var(--danger-color);">❌ Upload failed. See console for details.</span>`;
+        console.error(err);
+      } finally {
+        fileNameDisplay.textContent = "No file selected";
+        uploadBtn.disabled = true;
+        selectedFile = null;
+      }
+    }
+    async function logout(event) {
+      event.preventDefault();
+      await fetch("/logout", {method: "POST", credentials: "include"});
+      gsap.to('.dashboard-container', { duration: 0.5, opacity: 0, ease: 'power2.in', onComplete: () => { window.location.href = "/"; } });
+    }
+  </script>
+</body>
+</html>

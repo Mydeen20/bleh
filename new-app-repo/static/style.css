@@ -1,0 +1,3 @@
+body { margin: 0; font-family: 'Segoe UI', sans-serif; }
+.sidebar ul li a { text-decoration: none; cursor:pointer; }
+.sidebar ul li a:hover { color:#00d9ff; }

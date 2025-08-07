@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Generate Reports - LMS Admin</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+  <style>
+    :root {
+      --primary-color: #00d9ff; --primary-light: #a7f3ff; --primary-dark: #00b8d4; --background-color: #0f172a; --sidebar-bg: #1e293b; --card-bg: #1e293b; --text-color: #f8fafc; --text-muted: #94a3b8; --border-color: #334155; --shadow-color: rgba(0, 217, 255, 0.1); --input-bg: #131c31;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background-color: var(--background-color); color: var(--text-color); overflow-x: hidden; }
+    .dashboard-container { display: flex; min-height: 100vh; }
+    .sidebar { width: 260px; background-color: var(--sidebar-bg); padding: 1.5rem; display: flex; flex-direction: column; border-right: 1px solid var(--border-color); }
+    .sidebar-header-link { text-decoration: none; color: inherit; display: block; margin-bottom: 2.5rem; }
+    .sidebar-header { display: flex; align-items: center; gap: 1rem; }
+    .sidebar-header .logo-icon { font-size: 2rem; color: var(--primary-color); }
+    .sidebar-header h1 { font-size: 1.5rem; font-weight: 600; }
+    .sidebar-nav h3 { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin: 1.5rem 0 0.75rem; }
+    .sidebar-nav ul { list-style: none; }
+    .sidebar-nav ul li a { color: var(--text-muted); text-decoration: none; display: flex; align-items: center; padding: 0.75rem 1rem; border-radius: 8px; transition: background 0.2s ease, color 0.2s ease; font-weight: 500; margin-bottom: 0.25rem; }
+    .sidebar-nav ul li a i { margin-right: 1rem; min-width: 20px; text-align: center; font-size: 1.1rem; }
+    .sidebar-nav ul li a:hover { background-color: rgba(0, 217, 255, 0.1); color: var(--primary-light); }
+    .sidebar-nav ul li a.active { background-color: var(--primary-color); color: var(--background-color); font-weight: 600; box-shadow: 0 4px 15px var(--shadow-color); }
+    .sidebar-footer { margin-top: auto; }
+    .main-content { flex: 1; padding: 2rem; overflow-y: auto; }
+    .main-header { margin-bottom: 2rem; }
+    .main-header h2 { font-size: 1.8rem; font-weight: 600; }
+    .report-generator-container { background-color: var(--card-bg); padding: 2.5rem; border-radius: 12px; border: 1px solid var(--border-color); max-width: 900px; margin: 0 auto; }
+    .report-generator-container h3 { font-size: 1.2rem; font-weight: 500; color: var(--text-muted); margin-bottom: 1.5rem; }
+    .report-type-selection { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+    .report-type-card { background-color: var(--input-bg); border: 2px solid var(--border-color); border-radius: 10px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.3s ease; }
+    .report-type-card:hover { transform: translateY(-5px); border-color: var(--primary-dark); }
+    .report-type-card.selected { border-color: var(--primary-color); background-color: rgba(0, 217, 255, 0.1); box-shadow: 0 0 15px var(--shadow-color); }
+    .report-type-card i { font-size: 2.5rem; color: var(--primary-light); margin-bottom: 1rem; display: block; }
+    .report-type-card p { font-weight: 600; font-size: 1.1rem; }
+    .target-input-container { height: 0; overflow: hidden; transition: height 0.4s ease; }
+    .input-group { margin-bottom: 2rem; }
+    .input-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--text-muted); }
+    .input-group input { width: 100%; background-color: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.75rem 1rem; color: var(--text-color); font-family: 'Poppins', sans-serif; font-size: 1rem; transition: border-color 0.3s ease, box-shadow 0.3s ease; }
+    .input-group input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px var(--shadow-color); }
+    .download-btn { background-color: var(--primary-color); color: var(--background-color); border: none; padding: 0.8rem 2.5rem; font-family: 'Poppins', sans-serif; font-size: 1.1rem; font-weight: 600; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.75rem; transition: background-color 0.3s ease, transform 0.3s ease; }
+    .download-btn:hover { background-color: var(--primary-dark); transform: translateY(-2px); }
+    .download-btn:disabled { background-color: var(--text-muted); cursor: not-allowed; transform: none; }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <nav class="sidebar">
+      <a href="{{ url_for('dashboard_admin') }}" class="sidebar-header-link">
+        <div class="sidebar-header"><i class="fas fa-brain logo-icon"></i><h1>LMS Admin</h1></div>
+      </a>
+      <div class="sidebar-nav">
+        <h3>AI Management</h3>
+        <ul>
+          <li><a href="{{ url_for('admin.hr_agent_page') }}"><i class="fas fa-robot"></i> AI HR Agent</a></li>
+        </ul>
+        <h3>Reports & Analytics</h3>
+        <ul>
+          <li><a href="{{ url_for('admin.agent_metrics_page') }}"><i class="fas fa-chart-simple"></i> Agent Metrics</a></li>
+          <li><a href="{{ url_for('admin.generate_reports_page') }}" class="active"><i class="fas fa-file-arrow-down"></i> Generate Reports</a></li>
+        </ul>
+      </div>
+      <div class="sidebar-footer">
+         <div class="sidebar-nav">
+             <h3>Other</h3>
+             <ul><li><a href="#" onclick="logout(event)"><i class="fas fa-sign-out-alt"></i> Logout</a></li></ul>
+         </div>
+      </div>
+    </nav>
+    <main class="main-content">
+      <header class="main-header"><h2>Generate & Download Reports</h2></header>
+      <div class="report-generator-container">
+        <h3>1. Select Report Type</h3>
+        <div class="report-type-selection">
+            <div class="report-type-card" data-type="all"><i class="fas fa-globe"></i><p>All Employees</p></div>
+            <div class="report-type-card" data-type="department"><i class="fas fa-building"></i><p>By Department</p></div>
+            <div class="report-type-card" data-type="individual"><i class="fas fa-user"></i><p>By Employee</p></div>
+        </div>
+        <div id="targetInputContainer" class="target-input-container">
+            <h3>2. Specify Target</h3>
+            <div class="input-group">
+                <label id="targetLabel" for="target">Target</label>
+                <input type="text" id="target" placeholder="Enter Department or Employee Code">
+            </div>
+        </div>
+        <div style="text-align: center;">
+            <button id="downloadBtn" class="download-btn" onclick="generateReport()" disabled>
+                <i class="fas fa-download"></i><span>Download Report</span>
+            </button>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        gsap.from('.sidebar', { duration: 1, x: -260, ease: 'power3.out' });
+        gsap.from('.main-content', { duration: 1, opacity: 0, ease: 'power2.inOut', delay: 0.3 });
+        gsap.from('.main-header, .report-generator-container', { duration: 1, opacity: 0, y: 30, ease: 'power3.out', stagger: 0.1, delay: 0.5 });
+    });
+    const reportCards = document.querySelectorAll('.report-type-card');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const targetInputContainer = document.getElementById('targetInputContainer');
+    const targetInput = document.getElementById('target');
+    const targetLabel = document.getElementById('targetLabel');
+    let selectedType = '';
+    reportCards.forEach(card => {
+        card.addEventListener('click', () => {
+            reportCards.forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            selectedType = card.dataset.type;
+            updateUIForSelection();
+        });
+    });
+    function updateUIForSelection() {
+        if (selectedType === 'all') {
+            gsap.to(targetInputContainer, { height: 0, duration: 0.4, ease: 'power2.inOut' });
+            downloadBtn.disabled = false;
+        } else if (selectedType) {
+            targetLabel.textContent = selectedType === 'department' ? 'Department Name' : 'Employee Code';
+            targetInput.placeholder = selectedType === 'department' ? 'e.g., Engineering' : 'e.g., E12345';
+            gsap.to(targetInputContainer, { height: 'auto', duration: 0.4, ease: 'power2.inOut' });
+            downloadBtn.disabled = false;
+        }
+    }
+    function generateReport() {
+      if (!selectedType) return;
+      const target = targetInput.value;
+      if ((selectedType === 'department' || selectedType === 'individual') && !target) {
+          alert('Please specify a target for this report type.');
+          return;
+      }
+      window.location.href = `/admin/generate_report?type=${selectedType}&target=${target}`;
+    }
+    async function logout(event) {
+      event.preventDefault();
+      await fetch("/logout", {method: "POST", credentials: "include"});
+      gsap.to('.dashboard-container', { duration: 0.5, opacity: 0, ease: 'power2.in', onComplete: () => { window.location.href = "/"; } });
+    }
+  </script>
+</body>
+</html>

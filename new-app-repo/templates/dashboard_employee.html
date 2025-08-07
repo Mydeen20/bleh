@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Employee Dashboard - LMS Portal</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+  <style>
+    :root {
+      --primary-color: #00d9ff; --primary-light: #a7f3ff; --primary-dark: #00b8d4; --background-color: #0f172a; --sidebar-bg: #1e293b; --card-bg: #1e293b; --text-color: #f8fafc; --text-muted: #94a3b8; --border-color: #334155; --shadow-color: rgba(0, 217, 255, 0.1); --success-color: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background-color: var(--background-color); color: var(--text-color); overflow: hidden; }
+    .dashboard-container { display: flex; min-height: 100vh; height: 100vh; }
+    .sidebar { width: 260px; background-color: var(--sidebar-bg); padding: 1.5rem; display: flex; flex-direction: column; border-right: 1px solid var(--border-color); z-index: 10; }
+    .sidebar-header-link { text-decoration: none; color: inherit; display: block; margin-bottom: 2.5rem; }
+    .sidebar-header { display: flex; align-items: center; gap: 1rem; }
+    .sidebar-header .logo-icon { font-size: 2rem; color: var(--primary-color); }
+    .sidebar-header h1 { font-size: 1.5rem; font-weight: 600; }
+    .user-profile { padding: 1rem; margin-bottom: 1.5rem; text-align: center; border: 1px solid var(--border-color); border-radius: 8px; background-color: rgba(0,0,0,0.2); }
+    .user-profile .role { font-size: 1.1rem; font-weight: 600; color: var(--primary-light); margin-bottom: 0.25rem; }
+    .user-profile .department { font-size: 0.9rem; color: var(--text-muted); }
+    .sidebar-nav h3 { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin: 1.5rem 0 0.75rem; }
+    .sidebar-nav ul { list-style: none; }
+    .sidebar-nav ul li a { color: var(--text-muted); text-decoration: none; display: flex; align-items: center; padding: 0.75rem 1rem; border-radius: 8px; transition: background 0.2s ease, color 0.2s ease; font-weight: 500; margin-bottom: 0.25rem; }
+    .sidebar-nav ul li a i { margin-right: 1rem; min-width: 20px; text-align: center; font-size: 1.1rem; }
+    .sidebar-nav ul li a:hover { background-color: rgba(0, 217, 255, 0.1); color: var(--primary-light); }
+    .sidebar-nav ul li a.active { background-color: var(--primary-color); color: var(--background-color); font-weight: 600; }
+    .sidebar-footer { margin-top: auto; }
+    .main-content { flex: 1; padding: 2rem; overflow-y: auto; position: relative; }
+    .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    .main-header h2 { font-size: 1.8rem; font-weight: 600; }
+    .agent-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; }
+    .agent-card-link { text-decoration: none; color: inherit; }
+    .agent-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color); text-align: center; transition: all 0.3s ease; position: relative; overflow: hidden; height: 100%; }
+    .agent-card:hover { transform: translateY(-8px); box-shadow: 0 10px 30px var(--shadow-color); border-color: var(--primary-dark); }
+    .agent-card .icon { font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem; transition: transform 0.3s ease; }
+    .agent-card h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .agent-card p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; }
+    .recommender-section { background-color: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); padding: 2rem; margin-bottom: 2rem; text-align: center; }
+    .recommender-section h3 { font-size: 1.5rem; margin-bottom: 1rem; }
+    .recommender-section p { color: var(--text-muted); max-width: 600px; margin: 0 auto 1.5rem; }
+    .recommend-btn { background: linear-gradient(90deg, var(--primary-dark), var(--primary-color)); border: none; color: var(--background-color); padding: 1rem 2.5rem; font-size: 1.1rem; font-weight: 600; border-radius: 50px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 5px 20px rgba(0, 217, 255, 0.2); animation: pulse 2s infinite; }
+    .recommend-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0, 217, 255, 0.4); animation: none; }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+    #recommendedCourseContainer { height: 0; opacity: 0; overflow: hidden; transition: all 0.5s ease-in-out; }
+    .recommended-course-card { background-color: var(--input-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 1.5rem; margin-top: 1rem; text-align: left; }
+    .recommended-course-card h4 { font-size: 1.2rem; color: var(--primary-light); margin-bottom: 1rem; }
+    .view-courses-btn { display: block; text-align: center; text-decoration: none; background-color: var(--success-color); color: #fff; border: none; padding: 0.6rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background-color 0.2s; }
+    .view-courses-btn:hover { background-color: #1a9c4a; }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <nav class="sidebar">
+      <a href="{{ url_for('dashboard') }}" class="sidebar-header-link">
+        <div class="sidebar-header"><i class="fas fa-user-graduate logo-icon"></i><h1>{{ employee.name }}</h1></div>
+      </a>
+      <div class="user-profile">
+        <div class="role">{{ employee.role }}</div>
+        <div class="department">Domain: {{ employee.department }}</div>
+      </div>
+      <div class="sidebar-nav">
+        <h3>Navigation</h3>
+        <ul>
+          <li><a href="{{ url_for('dashboard') }}" class="active"><i class="fas fa-home"></i> Home</a></li>
+          <li><a href="{{ url_for('employee.my_courses_page') }}"><i class="fas fa-book"></i> My Courses</a></li>
+        </ul>
+      </div>
+      <div class="sidebar-footer">
+         <div class="sidebar-nav">
+             <h3>Account</h3>
+             <ul><li><a href="#" onclick="logout(event)"><i class="fas fa-sign-out-alt"></i> Sign Out</a></li></ul>
+         </div>
+      </div>
+    </nav>
+    <main class="main-content">
+      <header class="main-header"><h2>Welcome, {{ employee.name }}!</h2></header>
+      <div class="recommender-section">
+        <h3>Ready for your next challenge?</h3>
+        <p>Our AI will analyze your skills and assign a new course to help you grow. Click the button below to get started.</p>
+        <button class="recommend-btn" id="recommendBtn" onclick="getRecommendation()"><i class="fas fa-wand-magic-sparkles"></i> Get New Course!</button>
+        <div id="recommendedCourseContainer"></div>
+      </div>
+      <div class="agent-cards-grid">
+        <a href="{{ url_for('employee.agent_page', agent_type='profile') }}" class="agent-card-link">
+          <div class="agent-card"><i class="fas fa-user-check icon"></i><h3>Profile Agent</h3><p>View your profile details and current course assignments.</p></div>
+        </a>
+        <a href="{{ url_for('employee.agent_page', agent_type='assessment') }}" class="agent-card-link">
+          <div class="agent-card"><i class="fas fa-tasks icon"></i><h3>Assessment Agent</h3><p>Check your assessment status and identify skill gaps.</p></div>
+        </a>
+        <a href="{{ url_for('employee.agent_page', agent_type='recommender') }}" class="agent-card-link">
+          <div class="agent-card"><i class="fas fa-robot icon"></i><h3>Recommender Agent</h3><p>Get personalized course recommendations from our AI.</p></div>
+        </a>
+        <a href="{{ url_for('employee.agent_page', agent_type='tracker') }}" class="agent-card-link">
+          <div class="agent-card"><i class="fas fa-chart-line icon"></i><h3>Tracker Agent</h3><p>Track your learning progress and achievements.</p></div>
+        </a>
+      </div>
+    </main>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script>
+    const recommendBtn = document.getElementById('recommendBtn');
+    const recommendedCourseContainer = document.getElementById('recommendedCourseContainer');
+
+    async function getRecommendation() {
+        recommendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> AI is analyzing your profile...';
+        recommendBtn.disabled = true;
+        try {
+            const response = await fetch('/employee/recommend_course', { credentials: 'include' });
+            const result = await response.json();
+            
+            if (result.success) {
+                const course = result.course;
+                let message = `Success! The AI has assigned you a new course:`;
+                if(course.message) { // Handle case where course was already assigned
+                    message = course.message;
+                }
+
+                recommendedCourseContainer.innerHTML = `
+                    <div class="recommended-course-card">
+                        <h4>${message}</h4>
+                        <p style="font-size: 1.2rem; color: var(--primary-light); margin-bottom: 1rem;">${course.CourseName}</p>
+                        <a href="/employee/my_courses" class="view-courses-btn">View My Courses</a>
+                    </div>`;
+                gsap.to(recommendedCourseContainer, { height: 'auto', opacity: 1, duration: 0.5, ease: 'power2.out' });
+            } else {
+                recommendedCourseContainer.innerHTML = `<p style="color: var(--text-muted); padding-top: 1rem;">${result.message}</p>`;
+                gsap.to(recommendedCourseContainer, { height: 'auto', opacity: 1, duration: 0.5, ease: 'power2.out' });
+            }
+        } catch (error) {
+            console.error("Failed to get recommendation:", error);
+            recommendedCourseContainer.innerHTML = `<p style="color: red; padding-top: 1rem;">An error occurred while communicating with the AI agent.</p>`;
+        } finally {
+            recommendBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Get New Course!';
+            recommendBtn.disabled = false;
+        }
+    }
+
+    async function logout(event) {
+      event.preventDefault();
+      await fetch("/logout", {method: "POST", credentials: "include"});
+      gsap.to('.dashboard-container', { duration: 0.5, opacity: 0, ease: 'power2.in', onComplete: () => { window.location.href = "/"; } });
+    }
+  </script>
+</body>
+</html>

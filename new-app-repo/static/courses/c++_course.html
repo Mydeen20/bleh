@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Learning Platform - C++</title>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons for UI elements -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Google Fonts: Poppins for Quiz & Inter for body -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Base styles */
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #f0f4f8;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden; /* Prevent horizontal scroll from blobs */
+        }
+        main {
+            transition: margin-right 0.4s ease-in-out;
+            z-index: 10;
+            position: relative;
+        }
+
+        /* --- Blob Background --- */
+        .blob-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.7;
+        }
+        .blob1 {
+            width: 400px;
+            height: 450px;
+            top: -150px;
+            left: -200px;
+            background: rgba(23, 37, 84, 0.5); 
+            animation: move 25s infinite alternate;
+        }
+        .blob2 {
+            width: 500px;
+            height: 500px;
+            bottom: -200px;
+            right: -250px;
+            background: rgba(20, 184, 166, 0.5); /* Teal */
+            animation: move 30s infinite alternate;
+        }
+        .blob3 {
+            width: 300px;
+            height: 300px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 217, 255, 0.4); /* User-friendly Cyan */
+            animation: move 20s infinite alternate;
+        }
+
+        @keyframes move {
+            from {
+                transform: rotate(0deg) scale(1) translateX(-20px);
+            }
+            to {
+                transform: rotate(360deg) scale(1.2) translateX(20px);
+            }
+        }
+
+        /* --- Enhanced Glassmorphism Effect --- */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* --- Glittering Button Effect --- */
+        .glitter-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        .glitter-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(120deg, rgba(255, 255, 255, 0) 20%, rgba(255, 255, 255, 0.5) 50%, rgba(255, 255, 255, 0) 80%);
+            transform: skewX(-25deg);
+            transition: left 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .glitter-btn:hover::before {
+            left: 150%;
+        }
+
+        /* Side Panel Styles */
+        .side-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            max-width: 500px;
+            height: 100%;
+            background-color: rgba(245, 247, 250, 0.8);
+            backdrop-filter: blur(15px);
+            box-shadow: -10px 0 25px rgba(0,0,0,0.1);
+            transform: translateX(100%);
+            transition: transform 0.4s ease-in-out;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+        }
+        .side-panel.open {
+            transform: translateX(0);
+        }
+        
+        /* Modal and Quiz Styles */
+        .modal-content {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .prose strong {
+            font-weight: 600;
+        }
+        .quiz-content {
+            max-height: 60vh;
+            overflow-y: auto;
+            padding-right: 1rem;
+            font-family: 'Poppins', sans-serif;
+        }
+        .quiz-option {
+            display: block;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            transition: all 0.2s ease-in-out;
+        }
+        .quiz-option:hover {
+            background-color: #f3f4f6;
+            border-color: #6366f1;
+        }
+        .quiz-option input {
+            display: none;
+        }
+        .quiz-option input:checked + label {
+            font-weight: 600;
+            color: #4f46e5;
+            background-color: #eef2ff;
+            border-color: #6366f1;
+        }
+        .quiz-option label {
+             display: block;
+             width: 100%;
+             padding: 0.75rem 1rem;
+             cursor: pointer;
+             border-radius: 0.75rem;
+        }
+    </style>
+</head>
+<body class="font-sans">
+    
+    <!-- Animated Blob Background -->
+    <div class="blob-container">
+        <div class="blob blob1"></div>
+        <div class="blob blob2"></div>
+        <div class="blob blob3"></div>
+    </div>
+
+    <!-- Header Section -->
+    <header class="glass-card sticky top-0 shadow-md p-4 flex justify-between items-center w-full z-20">
+        <div class="flex items-center gap-4">
+            <button class="p-2 rounded-full hover:bg-white/50 transition-colors">
+                <i data-lucide="arrow-left" class="text-gray-700"></i>
+            </button>
+            <h1 id="course-title" class="text-xl font-semibold text-gray-800">Fundamentals of C++</h1>
+        </div>
+        <div class="flex items-center gap-2 md:gap-4">
+            <button id="open-ide-btn" class="glitter-btn flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-full hover:bg-gray-900 transition-all duration-300 shadow-lg transform hover:scale-105">
+                <i data-lucide="code-2" class="w-5 h-5"></i>
+                <span class="font-medium hidden md:inline">Open IDE</span>
+            </button>
+            <button id="ask-ai-btn" class="glitter-btn flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-full hover:from-blue-700 hover:to-indigo-800 transition-all duration-300 shadow-xl transform hover:scale-105">
+                <i data-lucide="sparkles" class="w-5 h-5"></i>
+                <span class="font-medium hidden md:inline">Ask AI</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="w-full max-w-4xl p-4 md:p-8 flex-grow flex flex-col mx-auto">
+        <div class="glass-card p-6 rounded-3xl">
+            <div class="w-full bg-white/30 rounded-full h-3 my-4 shadow-inner">
+                <div id="progress-bar" class="bg-gradient-to-r from-green-400 to-teal-500 h-3 rounded-full transition-all duration-500 ease-out" style="width: 10%;"></div>
+            </div>
+            
+            <div class="relative w-full aspect-video bg-gray-200 rounded-3xl shadow-2xl overflow-hidden">
+                <img id="course-image" src="" alt="Course Content" class="w-full h-full object-cover">
+            </div>
+
+            <div class="mt-8 w-full flex flex-col items-center gap-4">
+                <button id="summarize-slide-btn" class="glitter-btn flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-teal-400 to-cyan-500 text-white rounded-full hover:from-teal-500 hover:to-cyan-600 transition-all duration-300 shadow-lg transform hover:scale-105">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="font-semibold">✨ Summarize Slide</span>
+                </button>
+
+                <div id="timer-display" class="text-center p-2 rounded-lg font-semibold"></div>
+                <div id="completion-message" class="hidden text-center p-4 rounded-2xl glass-card text-gray-800 font-semibold">
+                    Congratulations! You've completed the course. Ready for a quiz?
+                </div>
+                 <button id="take-quiz-btn" class="glitter-btn hidden mt-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-full hover:from-blue-700 hover:to-purple-700 transition-colors shadow-xl text-lg transform hover:scale-105">
+                    Take Final Quiz
+                </button>
+                <div class="flex justify-between w-full mt-4">
+                    <button id="prev-btn" class="px-6 py-2 bg-white/80 text-gray-800 font-semibold rounded-xl hover:bg-white transition-colors shadow-md disabled:opacity-50">Previous</button>
+                    <button id="next-btn" class="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-colors shadow-lg disabled:bg-indigo-400">Next</button>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4 text-gray-600">
+                <p id="slide-counter"></p>
+            </div>
+        </div>
+    </main>
+
+    <!-- AI Side Panel -->
+    <div id="ai-panel" class="side-panel">
+        <div class="flex items-center justify-between p-4 border-b border-white/20">
+            <h2 class="text-xl font-bold text-gray-800">Ask AI</h2>
+            <button id="close-ai-panel-btn" class="p-2 rounded-full hover:bg-black/10"><i data-lucide="x"></i></button>
+        </div>
+        <div class="p-4 flex-grow overflow-y-auto">
+            <p id="ai-panel-context" class="text-sm text-gray-600 mb-4 font-semibold"></p>
+            <div id="ai-panel-content" class="prose max-w-none"></div>
+            <div id="further-reading-container" class="mt-6 border-t border-gray-300/80 pt-4"></div>
+        </div>
+        <div class="p-4 border-t border-white/20">
+            <textarea id="ai-question-input" placeholder="e.g., Explain 'polymorphism'..." class="w-full h-24 p-3 border border-gray-300/50 rounded-xl bg-white/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"></textarea>
+            <button id="ai-submit-btn" class="w-full mt-2 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors">Submit</button>
+        </div>
+    </div>
+
+    <!-- IDE Side Panel -->
+    <div id="ide-panel" class="side-panel">
+        <div class="flex items-center justify-between p-4 border-b border-white/20">
+            <h2 class="text-xl font-bold text-gray-800">Code IDE</h2>
+            <button id="close-ide-panel-btn" class="p-2 rounded-full hover:bg-black/10"><i data-lucide="x"></i></button>
+        </div>
+        <div class="p-4 flex flex-col flex-grow">
+            <select id="language-selector" class="w-full p-2 border border-gray-300/50 rounded-xl bg-white/50 mb-4">
+                <option value="c++">C++</option>
+                <option value="c">C</option>
+                <option value="python">Python</option>
+                <option value="javascript">JavaScript</option>
+                <option value="java">Java</option>
+            </select>
+            <textarea id="code-editor" class="w-full flex-grow p-3 border border-gray-300/50 rounded-xl bg-gray-900 text-green-400 font-mono text-sm" placeholder="Write your code here..."></textarea>
+            <div class="flex gap-2 mt-4">
+                <button id="run-code-btn" class="w-full py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 flex items-center justify-center gap-2">
+                    <i data-lucide="play"></i> Run Code
+                </button>
+                <button id="explain-code-btn" class="w-full py-3 bg-sky-600 text-white font-semibold rounded-xl hover:bg-sky-700 flex items-center justify-center gap-2">
+                    <i data-lucide="book-open-text"></i> ✨ Explain
+                </button>
+            </div>
+            <div class="mt-4 flex-grow overflow-y-auto border-t border-gray-200/50 pt-4">
+                <h3 class="font-semibold mb-2 text-gray-700">Output:</h3>
+                <pre id="code-output" class="bg-gray-800 text-white text-sm p-4 rounded-xl h-48 overflow-y-auto whitespace-pre-wrap"></pre>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Generic Modal for Summaries and Quizzes -->
+    <div id="generic-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div id="generic-modal-container" class="rounded-2xl shadow-2xl w-full max-w-2xl p-6 relative flex flex-col max-h-[90vh] modal-content">
+            <!-- Content will be injected here -->
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DATA AND CONSTANTS ---
+            const courseModules = [
+                { title: 'Introduction to c++', imageUrl: 'https://i.postimg.cc/MGVJ1TqX/1.png' },
+                { title: 'Overview', imageUrl: 'https://i.postimg.cc/FzvqygGB/2.png' },
+                { title: 'Datatypes', imageUrl: 'https://i.postimg.cc/d1PSFjMV/3.png' },
+                { title: 'Output operations', imageUrl: 'https://i.postimg.cc/brqCDYwX/4.png' },
+                { title: 'Output operations', imageUrl: 'https://i.postimg.cc/FHYPJBNK/5.png' },
+                { title: 'Functions', imageUrl: 'https://i.postimg.cc/vHNhMtfw/6.png' },
+                { title: 'Functions', imageUrl: 'https://i.postimg.cc/JhWb46hv/7.png' },
+                { title: 'Uses', imageUrl: 'https://i.postimg.cc/L6YfkKYG/8.png' },
+            ];
+            const TIMER_DURATION = 3;
+
+            // --- STATE ---
+            let currentImageIndex = 0;
+            let timeRemaining = TIMER_DURATION;
+            let isTimerActive = true;
+            let timerInterval;
+            let quizData = [];
+
+            // --- DOM ELEMENT REFERENCES ---
+            const body = document.body;
+            const header = document.querySelector('header');
+            const main = document.querySelector('main');
+            const courseTitle = document.getElementById('course-title');
+            const progressBar = document.getElementById('progress-bar');
+            const courseImage = document.getElementById('course-image');
+            const timerDisplay = document.getElementById('timer-display');
+            const completionMessage = document.getElementById('completion-message');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const slideCounter = document.getElementById('slide-counter');
+            const takeQuizBtn = document.getElementById('take-quiz-btn');
+            const summarizeSlideBtn = document.getElementById('summarize-slide-btn');
+
+            // Panels
+            const aiPanel = document.getElementById('ai-panel');
+            const askAiBtn = document.getElementById('ask-ai-btn');
+            const closeAiPanelBtn = document.getElementById('close-ai-panel-btn');
+            const aiPanelContext = document.getElementById('ai-panel-context');
+            const aiPanelContent = document.getElementById('ai-panel-content');
+            const aiQuestionInput = document.getElementById('ai-question-input');
+            const aiSubmitBtn = document.getElementById('ai-submit-btn');
+            const furtherReadingContainer = document.getElementById('further-reading-container');
+
+            const idePanel = document.getElementById('ide-panel');
+            const openIdeBtn = document.getElementById('open-ide-btn');
+            const closeIdePanelBtn = document.getElementById('close-ide-panel-btn');
+            const languageSelector = document.getElementById('language-selector');
+            const codeEditor = document.getElementById('code-editor');
+            const runCodeBtn = document.getElementById('run-code-btn');
+            const explainCodeBtn = document.getElementById('explain-code-btn');
+            const codeOutput = document.getElementById('code-output');
+            
+            const genericModal = document.getElementById('generic-modal');
+            const genericModalContainer = document.getElementById('generic-modal-container');
+
+            // --- GEMINI API FUNCTION ---
+            const callGeminiAPI = async (prompt, loadingElement = null) => {
+                const apiKey = "AIzaSyAd-ReC74i1FhKHKyAJ1LCN-iirmrHZrTE"; // Injected by environment
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+                
+                if(loadingElement) setLoading(loadingElement, true);
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                    const result = await response.json();
+                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (!text) throw new Error("No text content in API response.");
+                    return text;
+                } catch (error) {
+                    console.error("Gemini API call failed:", error);
+                    return "Sorry, an error occurred. Please try again.";
+                } finally {
+                    if(loadingElement) setLoading(loadingElement, false);
+                }
+            };
+
+            // --- UI & CORE LOGIC ---
+            const updateUI = () => {
+                const module = courseModules[currentImageIndex];
+                courseTitle.textContent = "Fundamentals of C++"; // Set course title
+                courseImage.src = module.imageUrl;
+                courseImage.alt = module.title;
+                slideCounter.textContent = `Slide ${currentImageIndex + 1}/${courseModules.length}: ${module.title}`;
+                progressBar.style.width = `${((currentImageIndex + 1) / courseModules.length) * 100}%`;
+                prevBtn.disabled = currentImageIndex === 0;
+                nextBtn.disabled = isTimerActive || currentImageIndex === courseModules.length - 1;
+
+                if (currentImageIndex === courseModules.length - 1) {
+                    timerDisplay.classList.add('hidden');
+                    completionMessage.classList.remove('hidden');
+                    takeQuizBtn.classList.remove('hidden');
+                } else {
+                    timerDisplay.classList.remove('hidden');
+                    completionMessage.classList.add('hidden');
+                    takeQuizBtn.classList.add('hidden');
+                }
+            };
+            
+            const setLoading = (element, isLoading) => {
+                if (isLoading) {
+                    element.innerHTML = `<div class="flex items-center justify-center p-8"><i data-lucide="loader-circle" class="animate-spin w-8 h-8 text-blue-500"></i></div>`;
+                } else {
+                    element.innerHTML = '';
+                }
+                lucide.createIcons();
+            };
+            
+            const showModal = (title, content, customClasses = 'glass-card') => {
+                genericModalContainer.className = `rounded-2xl shadow-2xl w-full max-w-2xl p-6 relative flex flex-col max-h-[90vh] modal-content ${customClasses}`;
+                genericModalContainer.innerHTML = `
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gray-800" style="font-family: 'Poppins', sans-serif;">${title}</h2>
+                        <button id="close-generic-modal-btn" class="p-2 rounded-full hover:bg-gray-200/50"><i data-lucide="x"></i></button>
+                    </div>
+                    <div>${content}</div>
+                `;
+                genericModal.classList.remove('hidden');
+                lucide.createIcons();
+                document.getElementById('close-generic-modal-btn').addEventListener('click', () => genericModal.classList.add('hidden'));
+            };
+
+            // --- TIMER LOGIC ---
+            const startTimer = () => {
+                if (currentImageIndex === courseModules.length - 1) { isTimerActive = false; updateUI(); return; }
+                isTimerActive = true;
+                timeRemaining = TIMER_DURATION;
+                updateTimerDisplay();
+                timerInterval = setInterval(() => {
+                    timeRemaining--;
+                    updateTimerDisplay();
+                    if (timeRemaining <= 0) {
+                        clearInterval(timerInterval);
+                        isTimerActive = false;
+                        updateUI();
+                        updateTimerDisplay();
+                    }
+                }, 1000);
+            };
+
+            const updateTimerDisplay = () => {
+                timerDisplay.className = 'text-center p-2 rounded-xl font-semibold w-full max-w-xs';
+                if (isTimerActive) {
+                    timerDisplay.classList.add('glass-card', 'text-red-700');
+                    timerDisplay.innerHTML = `Next slide unlocks in: <span>${timeRemaining}s</span>`;
+                } else {
+                    timerDisplay.classList.add('glass-card', 'text-green-700');
+                    timerDisplay.textContent = `You can proceed!`;
+                }
+            };
+            
+            // --- NAVIGATION ---
+            const navigate = (direction) => {
+                const newIndex = currentImageIndex + direction;
+                if (newIndex >= 0 && newIndex < courseModules.length) {
+                    currentImageIndex = newIndex;
+                    updateUI();
+                    clearInterval(timerInterval);
+                    startTimer();
+                }
+            };
+            
+            // --- SIDE PANEL LOGIC ---
+            const togglePanel = (panelToOpen) => {
+                const allPanels = [aiPanel, idePanel];
+                const isAlreadyOpen = panelToOpen.classList.contains('open');
+                
+                allPanels.forEach(p => p.classList.remove('open'));
+                
+                if (!isAlreadyOpen) {
+                    panelToOpen.classList.add('open');
+                }
+            };
+
+            // --- FEATURE LOGIC ---
+            const handleSummarizeSlide = async () => {
+                const module = courseModules[currentImageIndex];
+                showModal('✨ Slide Summary', '<div id="summary-loading"></div>');
+                const loadingDiv = document.querySelector('#generic-modal-container > div:last-child');
+                const prompt = `Provide a concise, easy-to-understand summary (2-3 sentences) for a presentation slide titled "${module.title}" in a "Fundamentals of C++" course.`;
+                const summary = await callGeminiAPI(prompt, loadingDiv);
+                loadingDiv.innerHTML = `<div class="prose max-w-none">${summary}</div>`;
+            };
+
+            const handleExplainCode = async () => {
+                const language = languageSelector.value;
+                const code = codeEditor.value;
+                if (!code.trim()) { 
+                    codeOutput.textContent = "Please write some code to explain."; 
+                    return; 
+                }
+                
+                codeOutput.innerHTML = ''; // Clear previous content
+                const prompt = `You are a code explanation engine. Provide a detailed, line-by-line explanation for the following ${language} code. Use markdown for formatting. Code:\n\n${code}`;
+                const result = await callGeminiAPI(prompt, codeOutput);
+                let formattedResult = result.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/`([^`]+)`/g, '<code class="bg-gray-200 text-red-500 px-1 rounded">$1</code>').replace(/\n/g, '<br>');
+                codeOutput.innerHTML = formattedResult;
+            };
+            
+            const handleFurtherReading = async (question, answer) => {
+                furtherReadingContainer.innerHTML = ''; // Clear previous
+                const prompt = `Based on the following question and answer about C++, suggest 3 related topics for further reading. For each topic, provide a one-sentence description. Question: "${question}" Answer: "${answer}"`;
+                const result = await callGeminiAPI(prompt, furtherReadingContainer);
+                
+                if (result && !result.startsWith("Sorry")) {
+                    let formattedResult = result.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+                    furtherReadingContainer.innerHTML = `<h4 class="font-bold mb-2">✨ For Further Reading:</h4><div class="prose prose-sm max-w-none">${formattedResult}</div>`;
+                } else {
+                    furtherReadingContainer.innerHTML = `<p class="text-sm text-gray-500">Could not load suggestions.</p>`;
+                }
+            };
+
+            const handleRunCode = async () => {
+                const language = languageSelector.value;
+                const code = codeEditor.value;
+                if (!code.trim()) { 
+                    codeOutput.textContent = "Please write some code first."; 
+                    return; 
+                }
+                
+                codeOutput.innerHTML = ''; // Clear previous content
+                const prompt = `You are a code execution engine. Analyze the following ${language} code, provide a brief, one-sentence explanation of what it does, and then provide its exact output. Format the response with "Explanation:" on one line, and "Output:" on the next, followed by the code's output. Code:\n\n${code}`;
+                const result = await callGeminiAPI(prompt, codeOutput);
+                codeOutput.textContent = result;
+            };
+
+            const handleAskAI = async () => {
+                const question = aiQuestionInput.value.trim();
+                if (!question) return;
+
+                aiPanelContext.textContent = `Context: ${courseModules[currentImageIndex].title}`;
+                furtherReadingContainer.innerHTML = '';
+                aiPanelContent.innerHTML = ''; // Clear previous content
+                
+                const prompt = `You are a helpful AI assistant for a Fundamentals of C++ course. A student is on the module "${courseModules[currentImageIndex].title}" and asks: "${question}". Provide a clear, plain-text answer.`;
+                const result = await callGeminiAPI(prompt, aiPanelContent);
+                
+                aiPanelContent.innerHTML = `<div class="prose max-w-none">${result.replace(/\n/g, '<br>')}</div>`;
+                aiQuestionInput.value = '';
+                
+                handleFurtherReading(question, result);
+            };
+            
+            // --- QUIZ LOGIC ---
+            const handleTakeQuiz = async () => {
+                showModal('Generating Quiz...', '<div id="quiz-loading"></div>', 'bg-white');
+                const loadingDiv = document.querySelector('#generic-modal-container > div:last-child');
+                const prompt = `Generate a 10-question multiple-choice quiz on the topic of "Fundamentals of C++". Provide the output as a valid JSON array. Each object in the array must have a "question" key (string), an "options" key (an array of 4 strings), and a "correctAnswerIndex" key (an integer from 0 to 3).`;
+                let result = await callGeminiAPI(prompt, loadingDiv);
+                
+                try {
+                    const jsonMatch = result.match(/\[[\s\S]*\]/);
+                    if (!jsonMatch) throw new Error("No valid JSON array found in the AI response.");
+                    quizData = JSON.parse(jsonMatch[0]);
+                    displayQuiz();
+                } catch (e) {
+                    console.error("Quiz JSON parsing error:", e, "Raw response:", result);
+                    showModal('Error', '<p>Could not generate the quiz. The AI response was not in the correct format. Please try again.</p>', 'bg-white');
+                }
+            };
+
+            const displayQuiz = () => {
+                let quizHTML = `<div class="quiz-content space-y-4">`;
+                quizData.forEach((q, index) => {
+                    quizHTML += `
+                        <div class="text-gray-800">
+                            <p class="font-semibold mb-3 text-lg">${index + 1}. ${q.question}</p>
+                            <div class="space-y-3">
+                                ${q.options.map((opt, i) => {
+                                    const optionId = `q${index}-opt${i}`;
+                                    return `
+                                    <div class="quiz-option">
+                                        <input type="radio" name="question-${index}" id="${optionId}" value="${i}">
+                                        <label for="${optionId}">${opt}</label>
+                                    </div>
+                                    `
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+                quizHTML += `</div><div class="mt-8 border-t border-gray-200/50 pt-4"><button id="submit-quiz-btn" class="w-full px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors">Submit Answers</button></div>`;
+                showModal('C++ Language Quiz', quizHTML, 'bg-white');
+                document.getElementById('submit-quiz-btn').addEventListener('click', handleSubmitQuiz);
+            };
+            
+            const handleSubmitQuiz = () => {
+                let score = 0;
+                quizData.forEach((q, index) => {
+                    const selected = document.querySelector(`input[name="question-${index}"]:checked`);
+                    if (selected && parseInt(selected.value) === q.correctAnswerIndex) {
+                        score++;
+                    }
+                });
+                const resultHTML = `
+                    <div class="text-center p-8">
+                        <h2 class="text-3xl font-bold mb-4">Quiz Complete!</h2>
+                        <p class="text-xl">You scored</p>
+                        <p class="text-6xl font-bold my-4 text-indigo-600">${score} / ${quizData.length}</p>
+                        <button id="end-course-btn" class="mt-6 px-8 py-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors">End Course</button>
+                    </div>
+                `;
+                showModal('Quiz Results', resultHTML, 'bg-white');
+                document.getElementById('end-course-btn').addEventListener('click', handleEndCourse);
+            };
+
+            const handleEndCourse = () => {
+                header.style.display = 'none';
+                main.style.display = 'none';
+                genericModal.classList.add('hidden');
+                body.innerHTML = `
+                    <div class="w-screen h-screen flex flex-col items-center justify-center text-center p-4">
+                        <div class="blob-container">
+                           <div class="blob blob1"></div><div class="blob blob2"></div>
+                        </div>
+                        <div class="relative z-10">
+                           <h1 class="text-4xl font-bold text-gray-800 mb-4">Thank you for completing the course!</h1>
+                           <p class="text-lg text-gray-600">You can now safely close this page.</p>
+                           <i data-lucide="party-popper" class="w-16 h-16 text-indigo-500 mt-8 mx-auto"></i>
+                        </div>
+                    </div>
+                `;
+                lucide.createIcons();
+            };
+
+            // --- EVENT LISTENERS ---
+            nextBtn.addEventListener('click', () => navigate(1));
+            prevBtn.addEventListener('click', () => navigate(-1));
+            takeQuizBtn.addEventListener('click', handleTakeQuiz);
+            summarizeSlideBtn.addEventListener('click', handleSummarizeSlide);
+            
+            askAiBtn.addEventListener('click', () => togglePanel(aiPanel));
+            closeAiPanelBtn.addEventListener('click', () => togglePanel(aiPanel));
+            openIdeBtn.addEventListener('click', () => togglePanel(idePanel));
+            // Corrected: Get the IDE panel's close button specifically
+            document.querySelector('#ide-panel #close-ide-panel-btn').addEventListener('click', () => togglePanel(idePanel));
+            
+            aiSubmitBtn.addEventListener('click', handleAskAI);
+            runCodeBtn.addEventListener('click', handleRunCode);
+            explainCodeBtn.addEventListener('click', handleExplainCode);
+
+            // --- INITIALIZATION ---
+            lucide.createIcons();
+            updateUI();
+            startTimer();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Add Employee - LMS Admin</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+  <style>
+    :root {
+      --primary-color: #00d9ff; --primary-light: #a7f3ff; --primary-dark: #00b8d4; --background-color: #0f172a; --sidebar-bg: #1e293b; --card-bg: #1e293b; --text-color: #f8fafc; --text-muted: #94a3b8; --border-color: #334155; --shadow-color: rgba(0, 217, 255, 0.1); --success-color: #22c55e; --danger-color: #ef4444; --input-bg: #131c31;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background-color: var(--background-color); color: var(--text-color); overflow-x: hidden; }
+    .dashboard-container { display: flex; min-height: 100vh; }
+    .sidebar { width: 260px; background-color: var(--sidebar-bg); padding: 1.5rem; display: flex; flex-direction: column; border-right: 1px solid var(--border-color); }
+    .sidebar-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 2.5rem; }
+    .sidebar-header .logo-icon { font-size: 2rem; color: var(--primary-color); }
+    .sidebar-header h1 { font-size: 1.5rem; font-weight: 600; }
+    .sidebar-nav h3 { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin: 1.5rem 0 0.75rem; }
+    .sidebar-nav ul { list-style: none; }
+    .sidebar-nav ul li a { color: var(--text-muted); text-decoration: none; display: flex; align-items: center; padding: 0.75rem 1rem; border-radius: 8px; transition: background 0.2s ease, color 0.2s ease; font-weight: 500; margin-bottom: 0.25rem; }
+    .sidebar-nav ul li a i { margin-right: 1rem; min-width: 20px; text-align: center; font-size: 1.1rem; }
+    .sidebar-nav ul li a:hover { background-color: rgba(0, 217, 255, 0.1); color: var(--primary-light); }
+    .sidebar-nav ul li a.active { background-color: var(--primary-color); color: var(--background-color); font-weight: 600; box-shadow: 0 4px 15px var(--shadow-color); }
+    .sidebar-footer { margin-top: auto; }
+    .main-content { flex: 1; padding: 2rem; overflow-y: auto; }
+    .main-header { margin-bottom: 2rem; }
+    .main-header h2 { font-size: 1.8rem; font-weight: 600; }
+    .form-container { background-color: var(--card-bg); padding: 2.5rem; border-radius: 12px; border: 1px solid var(--border-color); max-width: 900px; margin: 0 auto; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; }
+    .input-group { display: flex; flex-direction: column; }
+    .input-group label { margin-bottom: 0.5rem; font-weight: 500; color: var(--text-muted); font-size: 0.9rem; }
+    .input-group input { background-color: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.75rem 1rem; color: var(--text-color); font-family: 'Poppins', sans-serif; font-size: 1rem; transition: border-color 0.3s ease, box-shadow 0.3s ease; }
+    .input-group input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px var(--shadow-color); }
+    .form-footer { margin-top: 2rem; text-align: right; }
+    .submit-btn { background-color: var(--primary-color); color: var(--background-color); border: none; padding: 0.8rem 2rem; font-family: 'Poppins', sans-serif; font-size: 1rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: background-color 0.3s ease, transform 0.3s ease; }
+    .submit-btn:hover { background-color: var(--primary-dark); transform: translateY(-2px); }
+    .submit-btn:disabled { background-color: var(--text-muted); cursor: not-allowed; }
+    #toast-container { position: fixed; top: 20px; right: 20px; z-index: 1000; }
+    .toast { background-color: #fff; color: #333; padding: 15px 20px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px; opacity: 0; transform: translateX(100%); transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); border-left: 5px solid; }
+    .toast.show { opacity: 1; transform: translateX(0); }
+    .toast.success { border-color: var(--success-color); }
+    .toast.error { border-color: var(--danger-color); }
+    .toast .icon { font-size: 1.5rem; }
+    .toast.success .icon { color: var(--success-color); }
+    .toast.error .icon { color: var(--danger-color); }
+  </style>
+</head>
+<body>
+  <div id="toast-container"></div>
+  <div class="dashboard-container">
+    <nav class="sidebar">
+      <a href="{{ url_for('dashboard_admin') }}" style="text-decoration: none; color: inherit;">
+        <div class="sidebar-header">
+            <i class="fas fa-brain logo-icon"></i>
+            <h1>LMS Admin</h1>
+        </div>
+      </a>
+      <div class="sidebar-nav">
+        <h3>AI Management</h3>
+        <ul>
+          <li><a href="{{ url_for('admin.hr_agent_page') }}"><i class="fas fa-robot"></i> AI HR Agent</a></li>
+        </ul>
+        <h3>Reports & Analytics</h3>
+        <ul>
+          <li><a href="{{ url_for('admin.agent_metrics_page') }}"><i class="fas fa-chart-simple"></i> Agent Metrics</a></li>
+          <li><a href="{{ url_for('admin.generate_reports_page') }}"><i class="fas fa-file-arrow-down"></i> Generate Reports</a></li>
+          <li><a href="{{ url_for('admin.search_filters_page') }}"><i class="fas fa-search"></i> User Search</a></li>
+        </ul>
+      </div>
+      <div class="sidebar-footer">
+         <div class="sidebar-nav">
+             <h3>Other</h3>
+             <ul><li><a href="#" onclick="logout(event)"><i class="fas fa-sign-out-alt"></i> Logout</a></li></ul>
+         </div>
+      </div>
+    </nav>
+
+    <main class="main-content">
+      <header class="main-header">
+        <h2>Add New Employee</h2>
+      </header>
+      
+      <div class="form-container">
+        <form id="addEmployeeForm" onsubmit="addEmployee(event)">
+            <h3 style="color: var(--text-muted); margin-bottom: 1rem; grid-column: 1 / -1;">Credentials</h3>
+            <div class="form-grid">
+                <div class="input-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" placeholder="e.g., Jane Doe" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Set a temporary password" required>
+                </div>
+            </div>
+
+            <hr style="border-color: var(--border-color); margin: 2rem 0;">
+            <h3 style="color: var(--text-muted); margin-bottom: 1rem; grid-column: 1 / -1;">Initial Proficiency Scores (0-100)</h3>
+
+            <div class="form-grid">
+                <div class="input-group"><label for="HTML">HTML</label><input type="number" id="HTML" value="0" min="0" max="100"></div>
+                <div class="input-group"><label for="CSS">CSS</label><input type="number" id="CSS" value="0" min="0" max="100"></div>
+                <div class="input-group"><label for="JAVASCRIPT">JavaScript</label><input type="number" id="JAVASCRIPT" value="0" min="0" max="100"></div>
+                <div class="input-group"><label for="PYTHON">Python</label><input type="number" id="PYTHON" value="0" min="0" max="100"></div>
+                <div class="input-group"><label for="JAVA">Java</label><input type="number" id="JAVA" value="0" min="0" max="100"></div>
+                <div class="input-group"><label for="C">C</label><input type="number" id="C" value="0" min="0" max="100"></div>
+                <div class="input-group"><label for="CPP">C++</label><input type="number" id="CPP" value="0" min="0" max="100"></div>
+                <div class="input-group"><label for="SQL_TESTING">SQL Testing</label><input type="number" id="SQL_TESTING" value="0" min="0" max="100"></div>
+                <div class="input-group"><label for="TOOLS_COURSE">Testing Tools</label><input type="number" id="TOOLS_COURSE" value="0" min="0" max="100"></div>
+            </div>
+
+            <div class="form-footer">
+                <button type="submit" class="submit-btn" id="submitBtn">Add Employee</button>
+            </div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        gsap.from('.sidebar', { duration: 1, x: -260, ease: 'power3.out' });
+        gsap.from('.main-header, .form-container', { duration: 1, opacity: 0, y: 30, ease: 'power3.out', stagger: 0.1, delay: 0.3 });
+    });
+
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-times-circle';
+        toast.innerHTML = `<i class="fas ${iconClass} icon"></i> <p>${message}</p>`;
+        container.appendChild(toast);
+        setTimeout(() => toast.classList.add('show'), 100);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            toast.addEventListener('transitionend', () => toast.remove());
+        }, 5000);
+    }
+
+    const addEmployeeForm = document.getElementById('addEmployeeForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    async function addEmployee(event) {
+      event.preventDefault();
+      
+      const originalBtnText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+      submitBtn.disabled = true;
+
+      // Collect all data from the form
+      const data = {
+        Name: document.getElementById('name').value,
+        Password: document.getElementById('password').value,
+        HTML: parseInt(document.getElementById('HTML').value) || 0,
+        CSS: parseInt(document.getElementById('CSS').value) || 0,
+        JAVASCRIPT: parseInt(document.getElementById('JAVASCRIPT').value) || 0,
+        PYTHON: parseInt(document.getElementById('PYTHON').value) || 0,
+        JAVA: parseInt(document.getElementById('JAVA').value) || 0,
+        C: parseInt(document.getElementById('C').value) || 0,
+        CPP: parseInt(document.getElementById('CPP').value) || 0,
+        SQL_TESTING: parseInt(document.getElementById('SQL_TESTING').value) || 0,
+        TOOLS_COURSE: parseInt(document.getElementById('TOOLS_COURSE').value) || 0,
+      };
+
+      try {
+        const res = await fetch('/admin/add_employee', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(data),
+          credentials:'include'
+        });
+        
+        const result = await res.json();
+        
+        if (result.success) {
+          showToast("Employee added successfully!");
+          addEmployeeForm.reset();
+        } else {
+          showToast(result.error || "An unknown error occurred.", 'error');
+        }
+      } catch (err) {
+        showToast("Failed to connect to the server.", 'error');
+      } finally {
+        submitBtn.innerHTML = originalBtnText;
+        submitBtn.disabled = false;
+      }
+    }
+
+    async function logout(event) {
+      event.preventDefault();
+      await fetch("/logout", {method: "POST", credentials: "include"});
+      gsap.to('.dashboard-container', {
+          duration: 0.5,
+          opacity: 0,
+          ease: 'power2.in',
+          onComplete: () => { window.location.href = "/"; }
+      });
+    }
+  </script>
+</body>
+</html>

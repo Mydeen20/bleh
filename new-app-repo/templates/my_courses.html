@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Courses - LMS Portal</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+  <style>
+    :root {
+      --primary-color: #00d9ff; --primary-light: #a7f3ff; --primary-dark: #00b8d4; --background-color: #0f172a; --sidebar-bg: #1e293b; --card-bg: #1e293b; --text-color: #f8fafc; --text-muted: #94a3b8; --border-color: #334155; --shadow-color: rgba(0, 217, 255, 0.1); --success-color: #22c55e; --warning-color: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background-color: var(--background-color); color: var(--text-color); overflow: hidden; }
+    .dashboard-container { display: flex; min-height: 100vh; height: 100vh; }
+    .sidebar { width: 260px; background-color: var(--sidebar-bg); padding: 1.5rem; display: flex; flex-direction: column; border-right: 1px solid var(--border-color); z-index: 10; }
+    .sidebar-header-link { text-decoration: none; color: inherit; display: block; margin-bottom: 2.5rem; }
+    .sidebar-header { display: flex; align-items: center; gap: 1rem; }
+    .sidebar-header .logo-icon { font-size: 2rem; color: var(--primary-color); }
+    .sidebar-header h1 { font-size: 1.5rem; font-weight: 600; }
+    .sidebar-nav h3 { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin: 1.5rem 0 0.75rem; }
+    .sidebar-nav ul { list-style: none; }
+    .sidebar-nav ul li a { color: var(--text-muted); text-decoration: none; display: flex; align-items: center; padding: 0.75rem 1rem; border-radius: 8px; transition: background 0.2s ease, color 0.2s ease; font-weight: 500; margin-bottom: 0.25rem; }
+    .sidebar-nav ul li a i { margin-right: 1rem; min-width: 20px; text-align: center; font-size: 1.1rem; }
+    .sidebar-nav ul li a:hover { background-color: rgba(0, 217, 255, 0.1); color: var(--primary-light); }
+    .sidebar-nav ul li a.active { background-color: var(--primary-color); color: var(--background-color); font-weight: 600; }
+    .sidebar-footer { margin-top: auto; }
+    .main-content { flex: 1; padding: 2rem; overflow-y: auto; position: relative; }
+    .main-header { margin-bottom: 2rem; }
+    .main-header h2 { font-size: 1.8rem; font-weight: 600; }
+    
+    .courses-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+    .course-card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; overflow: hidden; transition: all 0.3s ease; }
+    .course-card:hover { transform: translateY(-8px); box-shadow: 0 10px 30px var(--shadow-color); border-color: var(--primary-dark); }
+    .course-card-content { padding: 1.5rem; flex-grow: 1; }
+    .course-card .status { font-size: 0.8rem; font-weight: 600; padding: 0.25rem 0.75rem; border-radius: 15px; display: inline-block; margin-bottom: 0.75rem; }
+    .status-not-started { background-color: rgba(245, 158, 11, 0.2); color: var(--warning-color); }
+    .status-in-progress { background-color: rgba(0, 217, 255, 0.2); color: var(--primary-light); }
+    .status-completed { background-color: rgba(34, 197, 94, 0.2); color: var(--success-color); }
+    .course-card h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; }
+    .progress-bar-container { width: 100%; background-color: #2a3a54; border-radius: 5px; height: 8px; margin-bottom: 0.5rem; }
+    .progress-bar { height: 100%; background-color: var(--primary-color); border-radius: 5px; transition: width 0.5s ease-in-out; }
+    .progress-text { font-size: 0.8rem; color: var(--text-muted); text-align: right; }
+    /* UPDATED: Styles for the button container */
+    .course-card-footer { border-top: 1px solid var(--border-color); padding: 1rem 1.5rem; background-color: #2a3a54; display: flex; gap: 0.5rem; }
+    .action-btn { flex: 1; text-decoration: none; display: block; text-align: center; background-color: var(--primary-color); color: var(--background-color); font-weight: 600; padding: 0.75rem; border-radius: 8px; transition: background-color 0.2s; cursor: pointer; border: none; font-family: 'Poppins', sans-serif; font-size: 1rem; }
+    .action-btn.view-btn { background-color: var(--border-color); color: var(--text-color); } /* Style for the view button */
+    .action-btn:hover { background-color: var(--primary-dark); }
+    .action-btn.view-btn:hover { background-color: #4a5a7d; }
+    .action-btn:disabled { background-color: var(--text-muted); cursor: not-allowed; opacity: 0.6; }
+    .loader-container { text-align: center; padding: 4rem; }
+    .loader { border: 4px solid var(--border-color); border-top: 4px solid var(--primary-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <nav class="sidebar">
+      <a href="{{ url_for('dashboard') }}" class="sidebar-header-link">
+        <div class="sidebar-header"><i class="fas fa-user-graduate logo-icon"></i><h1>Employee</h1></div>
+      </a>
+      <div class="sidebar-nav">
+        <h3>Navigation</h3>
+        <ul>
+          <li><a href="{{ url_for('dashboard') }}"><i class="fas fa-home"></i> Home</a></li>
+          <li><a href="{{ url_for('employee.my_courses_page') }}" class="active"><i class="fas fa-book"></i> My Courses</a></li>
+        </ul>
+      </div>
+      <div class="sidebar-footer">
+         <div class="sidebar-nav">
+             <h3>Account</h3>
+             <ul><li><a href="#" onclick="logout(event)"><i class="fas fa-sign-out-alt"></i> Sign Out</a></li></ul>
+         </div>
+      </div>
+    </nav>
+    <main class="main-content">
+      <header class="main-header">
+        <h2>My Assigned Courses</h2>
+      </header>
+      <div id="courses-container" class="courses-grid">
+        </div>
+    </main>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        gsap.from('.sidebar', { duration: 1, x: -260, ease: 'power3.out' });
+        gsap.from('.main-header, .courses-grid', { duration: 1, opacity: 0, y: 30, ease: 'power3.out', stagger: 0.1, delay: 0.3 });
+        
+        loadAssignedCourses();
+    });
+
+    async function loadAssignedCourses() {
+        const container = document.getElementById('courses-container');
+        container.innerHTML = `<div class="loader-container"><div class="loader"></div></div>`;
+
+        try {
+            const response = await fetch('/employee/get_my_courses', { credentials: 'include' });
+            const data = await response.json();
+            container.innerHTML = '';
+
+            if (data.success && data.courses.length > 0) {
+                data.courses.forEach(course => {
+                    const card = document.createElement('div');
+                    card.className = 'course-card';
+                    card.id = `course-${course.course_name.replace(/\s+/g, '-')}`;
+                    const statusClass = course.status.toLowerCase().replace(/\s+/g, '-');
+                    const isCompleted = course.status === 'Completed';
+
+                    // UPDATED: Card now includes a "View Course" button
+                    card.innerHTML = `
+                        <div class="course-card-content">
+                            <span class="status status-${statusClass}">${course.status}</span>
+                            <h3>${course.course_name}</h3>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" style="width: ${course.progress}%;"></div>
+                            </div>
+                            <div class="progress-text">${course.progress}% Complete</div>
+                        </div>
+                        <div class="course-card-footer">
+                            <a href="/static/${course.CourseFile}" target="_blank" class="action-btn view-btn">
+                                <i class="fas fa-eye"></i> View Course
+                            </a>
+                            <button class="action-btn" onclick="startAssessment(this, '${course.course_name}')" ${isCompleted ? 'disabled' : ''}>
+                                ${isCompleted ? '<i class="fas fa-check"></i> Completed' : '<i class="fas fa-file-alt"></i> Start Assessment'}
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } else {
+                container.innerHTML = `<p class="text-muted">You have not been assigned any courses yet. Go to the Home page to get a recommendation.</p>`;
+            }
+        } catch (error) {
+            container.innerHTML = `<p style="color:red;">An error occurred while fetching your courses.</p>`;
+            console.error('Fetch error:', error);
+        }
+    }
+
+    async function startAssessment(button, courseName) {
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> In Progress...';
+
+        const cardId = `course-${courseName.replace(/\s+/g, '-')}`;
+        const cardElement = document.getElementById(cardId);
+        const progressBar = cardElement.querySelector('.progress-bar');
+        const progressText = cardElement.querySelector('.progress-text');
+        
+        await gsap.to(progressBar, { 
+            width: '100%', 
+            duration: 2,
+            onUpdate: function() {
+                progressText.textContent = `${Math.round(this.progress() * 100)}% Complete`;
+            }
+        });
+
+        try {
+            const res = await fetch('/employee/submit_assessment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ course_name: courseName }),
+                credentials: 'include'
+            });
+            const result = await res.json();
+            
+            if (result.success) {
+                alert(result.message);
+            } else {
+                alert("An error occurred during assessment.");
+            }
+        } catch(err) {
+            alert("Could not connect to the server for assessment.");
+        } finally {
+            loadAssignedCourses();
+        }
+    }
+
+    async function logout(event) {
+      event.preventDefault();
+      await fetch("/logout", {method: "POST", credentials: "include"});
+      gsap.to('.dashboard-container', { 
+          duration: 0.5, 
+          opacity: 0, 
+          ease: 'power2.in', 
+          onComplete: () => { window.location.href = "/"; } 
+      });
+    }
+  </script>
+</body>
+</html>

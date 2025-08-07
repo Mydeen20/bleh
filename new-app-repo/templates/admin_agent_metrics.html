@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Agent Metrics - LMS Admin</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+  <style>
+    :root {
+      --primary-color: #00d9ff; --primary-light: #a7f3ff; --primary-dark: #00b8d4; --background-color: #0f172a; --sidebar-bg: #1e293b; --card-bg: #1e293b; --text-color: #f8fafc; --text-muted: #94a3b8; --border-color: #334155; --shadow-color: rgba(0, 217, 255, 0.1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background-color: var(--background-color); color: var(--text-color); overflow-x: hidden; }
+    .dashboard-container { display: flex; min-height: 100vh; }
+    .sidebar { width: 260px; background-color: var(--sidebar-bg); padding: 1.5rem; display: flex; flex-direction: column; border-right: 1px solid var(--border-color); }
+    .sidebar-header-link { text-decoration: none; color: inherit; display: block; margin-bottom: 2.5rem; }
+    .sidebar-header { display: flex; align-items: center; gap: 1rem; }
+    .sidebar-header .logo-icon { font-size: 2rem; color: var(--primary-color); }
+    .sidebar-header h1 { font-size: 1.5rem; font-weight: 600; }
+    .sidebar-nav h3 { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin: 1.5rem 0 0.75rem; }
+    .sidebar-nav ul { list-style: none; }
+    .sidebar-nav ul li a { color: var(--text-muted); text-decoration: none; display: flex; align-items: center; padding: 0.75rem 1rem; border-radius: 8px; transition: background 0.2s ease, color 0.2s ease; font-weight: 500; margin-bottom: 0.25rem; }
+    .sidebar-nav ul li a i { margin-right: 1rem; min-width: 20px; text-align: center; font-size: 1.1rem; }
+    .sidebar-nav ul li a:hover { background-color: rgba(0, 217, 255, 0.1); color: var(--primary-light); }
+    .sidebar-nav ul li a.active { background-color: var(--primary-color); color: var(--background-color); font-weight: 600; box-shadow: 0 4px 15px var(--shadow-color); }
+    .sidebar-footer { margin-top: auto; }
+    .main-content { flex: 1; padding: 2rem; overflow-y: auto; }
+    .main-header { margin-bottom: 2rem; }
+    .main-header h2 { font-size: 1.8rem; font-weight: 600; }
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+    .metric-card { background-color: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); padding: 1.5rem; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .metric-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px var(--shadow-color); }
+    .metric-card-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+    .metric-card-header i { font-size: 1.5rem; color: var(--primary-color); }
+    .metric-card-header h3 { font-size: 1.2rem; font-weight: 600; text-transform: capitalize; }
+    .metric-details { display: flex; justify-content: space-around; text-align: center; }
+    .metric-detail p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .metric-detail .value { font-size: 1.75rem; font-weight: 600; color: var(--text-color); }
+    .metric-detail .unit { font-size: 1rem; color: var(--text-muted); margin-left: 0.25rem; }
+    .state-container { text-align: center; padding: 4rem; color: var(--text-muted); }
+    .loader { border: 4px solid var(--border-color); border-top: 4px solid var(--primary-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 1rem; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <nav class="sidebar">
+      <a href="{{ url_for('dashboard_admin') }}" class="sidebar-header-link">
+        <div class="sidebar-header"><i class="fas fa-brain logo-icon"></i><h1>LMS Admin</h1></div>
+      </a>
+      <div class="sidebar-nav">
+        <h3>AI Management</h3>
+        <ul>
+          <li><a href="{{ url_for('admin.hr_agent_page') }}"><i class="fas fa-robot"></i> AI HR Agent</a></li>
+        </ul>
+        <h3>Reports & Analytics</h3>
+        <ul>
+          <li><a href="{{ url_for('admin.agent_metrics_page') }}" class="active"><i class="fas fa-chart-simple"></i> Agent Metrics</a></li>
+          <li><a href="{{ url_for('admin.generate_reports_page') }}"><i class="fas fa-file-arrow-down"></i> Generate Reports</a></li>
+        </ul>
+      </div>
+      <div class="sidebar-footer">
+         <div class="sidebar-nav">
+             <h3>Other</h3>
+             <ul><li><a href="#" onclick="logout(event)"><i class="fas fa-sign-out-alt"></i> Logout</a></li></ul>
+         </div>
+      </div>
+    </nav>
+    <main class="main-content">
+      <header class="main-header"><h2>Agentic Framework Metrics</h2></header>
+      <div id="metrics-container" class="metrics-grid"></div>
+    </main>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        gsap.from('.sidebar', { duration: 1, x: -260, ease: 'power3.out' });
+        gsap.from('.main-content', { duration: 1, opacity: 0, ease: 'power2.inOut', delay: 0.3 });
+        gsap.from('.main-header', { duration: 1, opacity: 0, y: 30, ease: 'power3.out', delay: 0.5 });
+    });
+    window.onload = async () => {
+      const container = document.getElementById('metrics-container');
+      container.innerHTML = `<div class="state-container"><div class="loader"></div><p>Loading Agent Metrics...</p></div>`;
+      try {
+        const res = await fetch('/admin/agent_metrics', { credentials: 'include' });
+        const data = await res.json();
+        container.innerHTML = '';
+        if (data.success && Object.keys(data.metrics).length > 0) {
+          for (const [agent, stats] of Object.entries(data.metrics)) {
+            const card = document.createElement('div');
+            card.className = 'metric-card';
+            const agentIcons = { profile: 'fa-user-check', assessment: 'fa-tasks', recommender: 'fa-robot', tracker: 'fa-chart-line' };
+            const icon = agentIcons[agent.toLowerCase().split('_')[0]] || 'fa-microchip';
+            card.innerHTML = `<div class="metric-card-header"><i class="fas ${icon}"></i><h3>${agent.replace('_', ' ')}</h3></div><div class="metric-details"><div class="metric-detail"><p>Queue Size</p><span class="value">${stats.queue}</span></div><div class="metric-detail"><p>Latency</p><span class="value">${stats.latency_ms}</span><span class="unit">ms</span></div><div class="metric-detail"><p>Error Rate</p><span class="value">${stats.error_rate}</span></div></div>`;
+            container.appendChild(card);
+          }
+          gsap.from('.metric-card', { duration: 0.8, opacity: 0, y: 20, stagger: 0.1, ease: 'power3.out' });
+        } else {
+          container.innerHTML = `<div class="state-container"><i class="fas fa-box-open"></i><p>No metrics data found.</p></div>`;
+        }
+      } catch (err) {
+        container.innerHTML = `<div class="state-container" style="color: var(--danger-color);"><i class="fas fa-exclamation-triangle"></i><p>Failed to load agent metrics.</p></div>`;
+      }
+    };
+    async function logout(event) {
+      event.preventDefault();
+      await fetch("/logout", {method: "POST", credentials: "include"});
+      gsap.to('.dashboard-container', { duration: 0.5, opacity: 0, ease: 'power2.in', onComplete: () => { window.location.href = "/"; } });
+    }
+  </script>
+</body>
+</html>

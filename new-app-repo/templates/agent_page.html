@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ agent_type.title() }} Agent - LMS Portal</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+  <style>
+    :root {
+      --primary-color: #00d9ff; --primary-light: #a7f3ff; --primary-dark: #00b8d4; --background-color: #0f172a; --sidebar-bg: #1e293b; --card-bg: #1e293b; --text-color: #f8fafc; --text-muted: #94a3b8; --border-color: #334155; --shadow-color: rgba(0, 217, 255, 0.1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background-color: var(--background-color); color: var(--text-color); overflow: hidden; }
+    .dashboard-container { display: flex; min-height: 100vh; height: 100vh; }
+    .sidebar { width: 260px; background-color: var(--sidebar-bg); padding: 1.5rem; display: flex; flex-direction: column; border-right: 1px solid var(--border-color); z-index: 10; }
+    .sidebar-header-link { text-decoration: none; color: inherit; display: block; margin-bottom: 2.5rem; }
+    .sidebar-header { display: flex; align-items: center; gap: 1rem; }
+    .sidebar-header .logo-icon { font-size: 2rem; color: var(--primary-color); }
+    .sidebar-header h1 { font-size: 1.5rem; font-weight: 600; }
+    .sidebar-nav h3 { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin: 1.5rem 0 0.75rem; }
+    .sidebar-nav ul { list-style: none; }
+    .sidebar-nav ul li a { color: var(--text-muted); text-decoration: none; display: flex; align-items: center; padding: 0.75rem 1rem; border-radius: 8px; transition: background 0.2s ease, color 0.2s ease; font-weight: 500; margin-bottom: 0.25rem; }
+    .sidebar-nav ul li a i { margin-right: 1rem; min-width: 20px; text-align: center; font-size: 1.1rem; }
+    .sidebar-nav ul li a:hover { background-color: rgba(0, 217, 255, 0.1); color: var(--primary-light); }
+    .sidebar-footer { margin-top: auto; }
+    .main-content { flex: 1; padding: 2rem; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center; }
+    .agent-interaction { display: flex; flex-direction: column; }
+    .agent-header h2 { font-size: 2.5rem; font-weight: 700; text-transform: capitalize; color: var(--primary-light); }
+    .agent-header p { color: var(--text-muted); margin-bottom: 2rem; font-size: 1.1rem; }
+    .spline-container { height: 100%; min-height: 400px; }
+    .response-container { background-color: var(--card-bg); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-color); min-height: 200px; }
+    .response-container h4 { font-size: 1.2rem; margin-bottom: 1rem; }
+    .response-container ul { list-style: none; padding-left: 0; }
+    .response-container ul li { background-color: #2a3a54; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 0.5rem; border-left: 3px solid var(--primary-color); }
+    .loader { border: 4px solid var(--border-color); border-top: 4px solid var(--primary-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 2rem auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <nav class="sidebar">
+      <a href="{{ url_for('dashboard_employee') }}" class="sidebar-header-link">
+        <div class="sidebar-header"><i class="fas fa-user-graduate logo-icon"></i><h1>Employee</h1></div>
+      </a>
+      <div class="sidebar-nav">
+        <h3>Navigation</h3>
+        <ul>
+          <li><a href="{{ url_for('dashboard_employee') }}"><i class="fas fa-arrow-left"></i> Back to Dashboard</a></li>
+        </ul>
+      </div>
+      <div class="sidebar-footer">
+         <div class="sidebar-nav">
+             <h3>Account</h3>
+             <ul><li><a href="#" onclick="logout(event)"><i class="fas fa-sign-out-alt"></i> Sign Out</a></li></ul>
+         </div>
+      </div>
+    </nav>
+    <main class="main-content">
+      <div class="agent-interaction">
+        <div class="agent-header">
+          <h2>{{ agent_type.title() }} Agent</h2>
+          <p>Here is the latest information from your AI assistant.</p>
+        </div>
+        <div id="response-area" class="response-container">
+          <div id="loader" class="loader"></div>
+          <h4 id="agent-summary" style="display:none;"></h4>
+          <ul id="agent-details"></ul>
+        </div>
+      </div>
+      <div class="spline-container">
+        <script type="module" src="https://unpkg.com/@splinetool/viewer@1.3.1/build/spline-viewer.js"></script>
+        <spline-viewer url="https://prod.spline.design/Vrzr5n0E32R0T1dC/scene.splinecode"></spline-viewer>
+      </div>
+    </main>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script>
+    const agentType = "{{ agent_type }}";
+    document.addEventListener('DOMContentLoaded', () => {
+        gsap.from('.sidebar', { duration: 1, x: -260, ease: 'power3.out' });
+        gsap.from('.agent-interaction, .spline-container', { duration: 1, opacity: 0, y: 30, ease: 'power3.out', stagger: 0.2, delay: 0.3 });
+        fetchAgentResponse();
+    });
+
+    async function fetchAgentResponse() {
+        const loader = document.getElementById("loader");
+        const summaryEl = document.getElementById("agent-summary");
+        const detailsEl = document.getElementById("agent-details");
+        
+        try {
+            const res = await fetch('/ask_agent', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ agent: agentType }),
+                credentials: 'include'
+            });
+            const data = await res.json();
+            
+            loader.style.display = "none";
+            summaryEl.style.display = "block";
+
+            if (data.error) {
+                summaryEl.textContent = "Error";
+                detailsEl.innerHTML = `<li>${data.error}</li>`;
+                return;
+            }
+            summaryEl.textContent = data.summary;
+            (data.details || []).forEach(item => {
+                const li = document.createElement("li");
+                li.textContent = item;
+                detailsEl.appendChild(li);
+            });
+        } catch (err) {
+            loader.style.display = "none";
+            summaryEl.textContent = "Error";
+            detailsEl.innerHTML = `<li>Failed to fetch AI response. Please try again later.</li>`;
+        }
+    }
+
+    async function logout(event) {
+      event.preventDefault();
+      await fetch("/logout", {method: "POST", credentials: "include"});
+      gsap.to('.dashboard-container', { duration: 0.5, opacity: 0, ease: 'power2.in', onComplete: () => { window.location.href = "/"; } });
+    }
+  </script>
+</body>
+</html>
