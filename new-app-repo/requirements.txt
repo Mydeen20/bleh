@@ -4,3 +4,4 @@ psycopg2-binary
 pandas
 langchain-google-genai
 gunicorn==20.1.0
+pymysql
